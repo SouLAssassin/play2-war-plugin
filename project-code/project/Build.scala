@@ -3,6 +3,7 @@ import Keys._
 import java.io.File
 import com.typesafe.sbteclipse.plugin.EclipsePlugin._
 import org.scalastyle.sbt.ScalastylePlugin
+import bintray.Keys._
 
 object Build extends Build {
 
@@ -10,7 +11,6 @@ object Build extends Build {
   import Generators._
 
   val nexus = "https://oss.sonatype.org/"
-  val scalasbt = "http://repo.scala-sbt.org/scalasbt/"
 
   val curDir = new File(".")
 
@@ -141,19 +141,11 @@ object Build extends Build {
 
   def ivySettings = commonIvyMavenSettings ++ Seq(
     publishMavenStyle := false,
-    publishTo <<= version {
-      version: String => {
-        val (name, url) = if (version.contains("-SNAPSHOT")) {
-          ("sbt-plugin-snapshots", scalasbt+"sbt-plugin-snapshots")
-        } else {
-          ("sbt-plugin-releases", scalasbt+"sbt-plugin-releases")
-        }
-        Some(Resolver.url(name, new URL(url))(Resolver.ivyStylePatterns))
-      }
-    }
+    repository in bintray := "sbt-plugins",
+    bintrayOrganization in bintray := None
   )
 
-  def mavenSettings = commonIvyMavenSettings ++ Seq(
+  def mavenSettings = commonIvyMavenSettings ++ Seq(bintray.Plugin.bintrayPublishSettings: _*) ++ Seq(
     publishMavenStyle := true,
     pomIncludeRepository := { _ => false },
     publishTo <<= version {
